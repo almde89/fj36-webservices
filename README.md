@@ -136,3 +136,538 @@ Falando um pouco sobre XML marshalling e unmarshalling. Sempre confundo esses do
 ### JAX-B
 
 Falando mais sobre as operações de marshalling e unmarshalling do JAX-B. Acho que isso tá bem tranquilo. Não tem tanto o que anotar.
+
+## XML Schema
+
+Coisas interessantes foram mencionadas. Ideias como: namespace, XSD e definição de Schemas para definição dos serviços. Na realidade, utilização de Schema para geração das tags válidas na definição de um WSDL.
+
+Isso quer dizer que poderíamos criar um XSD com as informações das entidades e estruturas que queremos definir para os serviços. É um formalismo desnecessário, mas há aplicabilidade, uma vez que restringe ainda mais o que pode ser definido em um XML.
+
+### Criação Schema
+
+```xml
+<xs:schema
+    version="1.0"
+    targetNamespace="http://www.caelum.com.br/fj36"> <!- Análogo ao pacote Java ->
+```
+> Imagino que o `targetNamespace` seja uma URL válida para a descoberta desses arquivo na Web. Uma vez que somos obrigados a definir uma URL de um Domínio da organização.
+
+### Uso Schema
+
+```xml
+<caelum:livro xmlns:caelum="http://www.caelum.com.br/fj36">
+```
+
+> **!Importante** `caelum` após o `xmlns:`é o apelido dado ao namespace para faclidade de uso durante a especificação do XML.
+
+### Gerando Schema from Java Class
+
+```java
+final JAXBContext context = JAXBContext.newInstance(Livro.class);
+context.generateSchema(new SchemaOutputResolver() {
+    @Override
+    public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+        final StreamResult result = new StreamResult(new File("schema.xsd"));
+        return result;
+    }
+});
+```
+
+XML Gerado:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="livro" type="livro"/>
+
+  <xs:complexType name="livro">
+    <xs:sequence>
+      <xs:element name="categoria" type="categoria" minOccurs="0"/>
+      <xs:element name="codigo" type="xs:string" minOccurs="0"/>
+      <xs:element name="nomeAutor" type="xs:string" minOccurs="0"/>
+      <xs:element name="titulo" type="xs:string" minOccurs="0"/>
+      <xs:element name="valor" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="categoria">
+    <xs:sequence>
+      <xs:element name="nome" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+
+### Mudando o tipo @XmlType
+
+```java
+@XmlType(name = "CAT") // mudando o tipo
+public class Categoria {
+    private String nome;
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+}
+```
+
+XML Gerado:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="livro" type="livro"/>
+
+  <xs:complexType name="livro">
+    <xs:sequence>
+      <xs:element name="categoria" type="CAT" minOccurs="0"/>
+      <xs:element name="codigo" type="xs:string" minOccurs="0"/>
+      <xs:element name="nomeAutor" type="xs:string" minOccurs="0"/>
+      <xs:element name="titulo" type="xs:string" minOccurs="0"/>
+      <xs:element name="valor" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CAT">
+    <xs:sequence>
+      <xs:element name="nome" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+
+### Gerando com targetNamespace
+
+Criar na raiz do pacote o arquivo `package-info.java` com o conteúdo:
+
+```java
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.caelum.com.br/fj36")
+package br.com.caelum.jaxb;
+```
+
+XML Gerado:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" targetNamespace="http://www.caelum.com.br/fj36" xmlns:tns="http://www.caelum.com.br/fj36" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="livro" type="tns:livro"/>
+
+  <xs:complexType name="livro">
+    <xs:sequence>
+      <xs:element name="categoria" type="tns:CAT" minOccurs="0"/>
+      <xs:element name="codigo" type="xs:string" minOccurs="0"/>
+      <xs:element name="nomeAutor" type="xs:string" minOccurs="0"/>
+      <xs:element name="titulo" type="xs:string" minOccurs="0"/>
+      <xs:element name="valor" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CAT">
+    <xs:sequence>
+      <xs:element name="nome" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+
+### Gerando a classe com base em um XSD
+
+```cmd
+
+$ xjc schema.xsd -d src -p br.com.caelum.generated
+
+parsing a schema...
+compiling a schema...
+br/com/caelum/generated/CAT.java
+br/com/caelum/generated/Livro.java
+br/com/caelum/generated/ObjectFactory.java
+br/com/caelum/generated/package-info.java
+```
+
+Resultado:
+
+br/com/caelum/generated/CAT.java
+```java
+//
+// This file was generated by the JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 
+// See <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Any modifications to this file will be lost upon recompilation of the source schema. 
+// Generated on: 2017.09.19 at 02:17:21 PM BRT 
+//
+
+
+package br.com.caelum.generated;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for CAT complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="CAT">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="nome" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "CAT", propOrder = {
+    "nome"
+})
+public class CAT {
+
+    protected String nome;
+
+    /**
+     * Gets the value of the nome property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getNome() {
+        return nome;
+    }
+
+    /**
+     * Sets the value of the nome property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setNome(String value) {
+        this.nome = value;
+    }
+
+}
+```
+
+br/com/caelum/generated/Livro.java
+```java
+//
+// This file was generated by the JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 
+// See <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Any modifications to this file will be lost upon recompilation of the source schema. 
+// Generated on: 2017.09.19 at 02:17:21 PM BRT 
+//
+
+
+package br.com.caelum.generated;
+
+import java.math.BigDecimal;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for livro complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="livro">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="categoria" type="{http://www.caelum.com.br/fj36}CAT" minOccurs="0"/>
+ *         &lt;element name="codigo" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="nomeAutor" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="titulo" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="valor" type="{http://www.w3.org/2001/XMLSchema}decimal" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "livro", propOrder = {
+    "categoria",
+    "codigo",
+    "nomeAutor",
+    "titulo",
+    "valor"
+})
+public class Livro {
+
+    protected CAT categoria;
+    protected String codigo;
+    protected String nomeAutor;
+    protected String titulo;
+    protected BigDecimal valor;
+
+    /**
+     * Gets the value of the categoria property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CAT }
+     *     
+     */
+    public CAT getCategoria() {
+        return categoria;
+    }
+
+    /**
+     * Sets the value of the categoria property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CAT }
+     *     
+     */
+    public void setCategoria(CAT value) {
+        this.categoria = value;
+    }
+
+    /**
+     * Gets the value of the codigo property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getCodigo() {
+        return codigo;
+    }
+
+    /**
+     * Sets the value of the codigo property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCodigo(String value) {
+        this.codigo = value;
+    }
+
+    /**
+     * Gets the value of the nomeAutor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getNomeAutor() {
+        return nomeAutor;
+    }
+
+    /**
+     * Sets the value of the nomeAutor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setNomeAutor(String value) {
+        this.nomeAutor = value;
+    }
+
+    /**
+     * Gets the value of the titulo property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTitulo() {
+        return titulo;
+    }
+
+    /**
+     * Sets the value of the titulo property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTitulo(String value) {
+        this.titulo = value;
+    }
+
+    /**
+     * Gets the value of the valor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigDecimal }
+     *     
+     */
+    public BigDecimal getValor() {
+        return valor;
+    }
+
+    /**
+     * Sets the value of the valor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigDecimal }
+     *     
+     */
+    public void setValor(BigDecimal value) {
+        this.valor = value;
+    }
+
+}
+```
+
+br/com/caelum/generated/ObjectFactory.java
+```java
+//
+// This file was generated by the JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 
+// See <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Any modifications to this file will be lost upon recompilation of the source schema. 
+// Generated on: 2017.09.19 at 02:17:21 PM BRT 
+//
+
+
+package br.com.caelum.generated;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlRegistry;
+import javax.xml.namespace.QName;
+
+
+/**
+ * This object contains factory methods for each 
+ * Java content interface and Java element interface 
+ * generated in the br.com.caelum.generated package. 
+ * <p>An ObjectFactory allows you to programatically 
+ * construct new instances of the Java representation 
+ * for XML content. The Java representation of XML 
+ * content can consist of schema derived interfaces 
+ * and classes representing the binding of schema 
+ * type definitions, element declarations and model 
+ * groups.  Factory methods for each of these are 
+ * provided in this class.
+ * 
+ */
+@XmlRegistry
+public class ObjectFactory {
+
+    private final static QName _Livro_QNAME = new QName("http://www.caelum.com.br/fj36", "livro");
+
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: br.com.caelum.generated
+     * 
+     */
+    public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link Livro }
+     * 
+     */
+    public Livro createLivro() {
+        return new Livro();
+    }
+
+    /**
+     * Create an instance of {@link CAT }
+     * 
+     */
+    public CAT createCAT() {
+        return new CAT();
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Livro }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.caelum.com.br/fj36", name = "livro")
+    public JAXBElement<Livro> createLivro(Livro value) {
+        return new JAXBElement<Livro>(_Livro_QNAME, Livro.class, null, value);
+    }
+
+}
+```
+
+br/com/caelum/generated/package-info.java
+```java
+//
+// This file was generated by the JavaTM Architecture for XML Binding(JAXB) Reference Implementation, v2.2.8-b130911.1802 
+// See <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Any modifications to this file will be lost upon recompilation of the source schema. 
+// Generated on: 2017.09.19 at 02:17:21 PM BRT 
+//
+
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.caelum.com.br/fj36")
+package br.com.caelum.generated;
+```
+
+### Trabalhando com Validação do XML e o tratamento de erros
+
+Quando utilizamos um XSD para criar a taxonomia de um XML, criamos a possibilidade de validação da formatação de um payload em XML. Segue código para execução da validação.
+
+```java
+final Livro livro = new Livro();
+livro.setCodigo("arq");
+
+final JAXBContext context = JAXBContext.newInstance(Livro.class);
+final JAXBSource source = new JAXBSource(context, livro);
+
+final SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+final Schema schema = sf.newSchema(new File("schema.xsd"));
+
+final Validator validator = schema.newValidator();
+validator.setErrorHandler(new ValidationErrorHandler());
+validator.validate(source);
+```
+
+Onde ValidationErrorHandler() é um tipo definido pelo usuário:
+
+```java
+public class ValidationErrorHandler implements ErrorHandler {
+    @Override
+    public void warning(SAXParseException exception) throws SAXException {
+        System.out.println(exception.getMessage());
+    }
+
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+        System.out.println(exception.getMessage());
+
+    }
+
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+        System.out.println(exception.getMessage());
+    }
+}
+```
+
+Dessa maneira, qualquer `warning`, `error` ou `fatalError` será delegado à instância de ErrorHandler para tratamento.
