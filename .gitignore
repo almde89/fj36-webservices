@@ -19,3 +19,5 @@ wildfly-8.2.0.Final/
 build/
 out/
 .idea/
+livro.json
+*.iml

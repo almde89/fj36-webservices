@@ -671,3 +671,17 @@ public class ValidationErrorHandler implements ErrorHandler {
 ```
 
 Dessa maneira, qualquer `warning`, `error` ou `fatalError` será delegado à instância de ErrorHandler para tratamento.
+
+## JSON
+
+É o que já estamos acostumados a utilizar. Não houve muita novidade.
+
+> **!Importante** vide: JSONSchema funciona como um XSD para o JSON.
+
+## Granularidade
+
+Um dos assuntos mais importantes para a construção de serviços. Trata do tamanho da responsabilidade que cada serviço implementa. Além de um conceito "moral" - coesão, acoplamento e reusabilidade - há incluso um conceito técnico, que abarca a questão de latência, tempo necessário para completar todo o processo de troca de mensagem entre cliente e servidor. É a latência que muda a percepção de tempo de resposta de um aplicativo para um usuário.
+
+É comum que os endpoints de fronteira, aqueles que se encontram no limite do escopo da resposabilidade do sistema servidor acomodem mais responsabilidade, ou seja, são menos agnósticos. Isso ocorre, pois o link existente entre cliente e servidor usualmente é mais lento do que a rede interna utilizada pelos sistemas servidores. Para minimizar o overhead de troca de mensagem via TCP, os serviços menos agnósticos instrumentam os mais agnósticos para, por fim, entregarem o serviço exigido por um cliente. Ou seja, todo o trade-off de overhead de troca de mensagem é delegado ao servidor, restando à comunicação de fronteira apenas resolver os problemas funcionais ligados às atividades que um cliente aciona.
+
+Isso não quer dizer que um serviço é implementado sobre o prisma do cliente, mas, sim, que um processo corporativo pode ser identificado e melhor detalhado durante a implementação, por exemplo: o serviço de PROCESSO de um TRIBUNAL é mais agnóstico ao NEGÓCIO de tribunal. Entretanto, para realizar o PROTOCOLO de um PROCESSO é necessário várias etapas antes. Uma delas é a PREVENÇÃO. Podemos ter um serviço de atividade (identificado em BPMN) que remonta todas essas mais granulares operações. Isso é dizer que um cliente apenas chama um serviço de atividade PROTOCOLAR que aciona outros contratos de outros serviços para completar todos os requisitos exigidos ao PROTOCOLAR um novo PROCESSO.
