@@ -122,3 +122,17 @@ final ItemEstoque item = estoque.getItemEstoque("ARQ");
 System.out.println("Quantidade disponível: " + item.getQuantidade());
 System.out.println("Classe: " + estoque.toString()); // resultado: Proxy[EstoqueRmi,RemoteObjectInvocationHandler[UnicastRef [liveRef: [endpoint:[127.0.1.1:45555](remote),objID:[-312b0b4a:15e959d74ff:-7fff, -3252849428727332287]]]]]
 ```
+
+# Aula 2
+
+## XML
+
+Falando um pouco sobre XML marshalling e unmarshalling. Sempre confundo esses dois, mas é fácil: é lembrar que a ideia do processo é a serialização, ou seja, o marshalling, que é a transformação da representação existente no sistema para um formato intermediário e padrão: XML, neste caso. Enquanto o unmarshalling é a "destruição" do XML e recuperação da representação em sistema.
+
+> **!Uma coisa legal** Olhando a característica central de um XML, que deve ser bem formatado e ter um elemento raiz, vemos a representação de um WSDL respeitando todas essas características.
+> `:envelop` como o elemento root, sua hierarquia representada de maneira bem formatada e respeitando toda a especificação XML. Apenas salientando o quanto essa linguagem de marcação é versátil e cresceu muito em uso nas últimas décadas.
+> Vemos o JSON como a representação do século, e realmente é =) - em partes, mas o XML tem uso bastante relevante e facilitado, se pensarmos na infinidade de ferramentas existentes no mercado hoje em dia.
+
+### JAX-B
+
+Falando mais sobre as operações de marshalling e unmarshalling do JAX-B. Acho que isso tá bem tranquilo. Não tem tanto o que anotar.

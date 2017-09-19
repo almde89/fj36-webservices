@@ -17,3 +17,5 @@ wildfly-8.2.0.Final/
 
 #project
 build/
+out/
+.idea/
