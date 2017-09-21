@@ -685,3 +685,19 @@ Um dos assuntos mais importantes para a construção de serviços. Trata do tama
 É comum que os endpoints de fronteira, aqueles que se encontram no limite do escopo da resposabilidade do sistema servidor acomodem mais responsabilidade, ou seja, são menos agnósticos. Isso ocorre, pois o link existente entre cliente e servidor usualmente é mais lento do que a rede interna utilizada pelos sistemas servidores. Para minimizar o overhead de troca de mensagem via TCP, os serviços menos agnósticos instrumentam os mais agnósticos para, por fim, entregarem o serviço exigido por um cliente. Ou seja, todo o trade-off de overhead de troca de mensagem é delegado ao servidor, restando à comunicação de fronteira apenas resolver os problemas funcionais ligados às atividades que um cliente aciona.
 
 Isso não quer dizer que um serviço é implementado sobre o prisma do cliente, mas, sim, que um processo corporativo pode ser identificado e melhor detalhado durante a implementação, por exemplo: o serviço de PROCESSO de um TRIBUNAL é mais agnóstico ao NEGÓCIO de tribunal. Entretanto, para realizar o PROTOCOLO de um PROCESSO é necessário várias etapas antes. Uma delas é a PREVENÇÃO. Podemos ter um serviço de atividade (identificado em BPMN) que remonta todas essas mais granulares operações. Isso é dizer que um cliente apenas chama um serviço de atividade PROTOCOLAR que aciona outros contratos de outros serviços para completar todos os requisitos exigidos ao PROTOCOLAR um novo PROCESSO.
+
+## Pasta Theory of Software
+
+Analogia às comidas italianas que utilizando massa. Iniciamos com o Spaghetti, vamos à Lasanha e terminamos com um Raviole.
+
+### Spaghetti
+
+O software é um emaranhado de resonsabilidades. Os 'concerns' se misturam.
+
+### Lasanha
+
+O software é dividido em camadas, layers e tiers, para a abstração de preocupações (concerns).
+
+### Raviole
+
+O software é autocontido em pequenas preocupações. Cada qual coesa o suficiente para o fornecimento de um serviço, de modo geral.
