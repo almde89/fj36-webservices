@@ -701,3 +701,60 @@ O software é dividido em camadas, layers e tiers, para a abstração de preocup
 ### Raviole
 
 O software é autocontido em pequenas preocupações. Cada qual coesa o suficiente para o fornecimento de um serviço, de modo geral.
+
+## JAX-RS
+
+Algumas observações sobre a implementação de endpoints com JAX-RS:
+
+1 - é ideal colocar no `@Consume` o maior número de `MediaType`'s o possível. Assim é possível aos clientes escolherem o formato de payload enviado ao servidor.
+2 - é ideal que façamos a mesma coisa com o `@Produces`.
+3 - ao dar um return em um `Response`, não colocar `.type(MediaType.XPTO)`, pois a negociação de conteúdo poderá acontecer também a nível de retorno da chamada dos endpoints.  
+
+## HATE O-A-S
+
+Pronuncia-se hateious, como em hideous. Utiliza links como motor da passagem do estado da representação. Isso quer dizer que toda reposta de um endpoint (recurso - substantivo do REST) será também identificada por seus diversos hyperlinks, ou apenas links.
+
+Dessa maneira representamos nosso modelo juntamente suas relações com outros recursos e "operações".
+
+Exemplo:
+
+```javascript
+// GET http://localhost:8080/fj36_webservice/pagamentos/1
+{
+    "id": 1,
+    "status": "CRIADO",
+    "valor": 10,
+    "links": [
+        {
+            "rel": "confirmar",
+            "uri": "/pagamentos/1",
+            "method": "PUT"
+        },
+        {
+            "rel": "cancelar",
+            "uri": "/pagamentos/1",
+            "method": "DELETE"
+        }
+    ]
+}
+```
+
+Para a solicitação temos todos os links associados ao recurso `pagamentos/1`, que representa um pagamento de código 1. Sua representação é o fragmento:
+
+```javascript
+{
+    "id": 1,
+    "status": "CRIADO",
+    "valor": 10
+}
+```
+
+Enquanto o restante, mesmo que dentro da representação JSON, simboliza seus vínculos a outros Recursos ou Verbos (web methods). Nesse caso temos a relação entre os Verbos PUT e DELETE do mesmo recurso.
+
+Uma maneira mais purista de realizar tão feito é identificar os links por intermédio de Web Links no cabeçalho da resposta. Seria algo no formato:
+
+`Link: <http://example.com/TheBook/chapter2>; rel="previous"; title="previous chapter"`
+
+Sendo Link o nome do cabeçalho, a url é o href, o rel é a função do relacionamento e title um sumary sobre a relation.
+
+> **!Importante** [RFC web linking](https://tools.ietf.org/html/rfc5988)
