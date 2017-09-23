@@ -758,3 +758,23 @@ Uma maneira mais purista de realizar tão feito é identificar os links por inte
 Sendo Link o nome do cabeçalho, a url é o href, o rel é a função do relacionamento e title um sumary sobre a relation.
 
 > **!Importante** [RFC web linking](https://tools.ietf.org/html/rfc5988)
+
+## Apache Camel
+
+Tecnologia intermediária que facilita as integrações entre diversos sistemas. A ideia é que não precisamos criar clientes o tempo todo. É necessário apenas algumas poucas configurações para que os contratos das diversas aplicações envolvidas na comunicação sejam respondidos e, assim, estabelecida a integração.
+
+O Camel é motor de muitos ESBs de mercado. É por ele que os ESBs conseguem negociar os diversas protocolos existentes entre os sistemas a serem integrados. Ele e seus componentes, plugins baixáveis, viabilizam a extensão para novos protocolos.
+
+> **Interessante** um dos ESBs que utiliza Apache Camel é o Mule ESB.
+
+```java
+from("file:entrada?delay=5s") // utilizando o componente file para leitura de arquivos dentro de um diretório
+    .log(LoggingLevel.INFO, "Processando mensagem ${id}")
+    .to("validator:file:xsd/pedido.xsd") // utilizando Schema para validação da mensagem
+    .to("file:saida") // utilizando o componente file para colocar os arquivos dentro do diretório saída 
+.errorHandler(deadLetterChannel("file:falha").useOriginalMessage() // utilizando o padrão Dead Letter Channel
+    .maximumRedeliveries(2).redeliveryDelay(2000)
+        .retryAttemptedLogLevel(LoggingLevel.ERROR));
+```
+
+> **!Importante** [Dead Letter Channel](http://www.enterpriseintegrationpatterns.com/patterns/messaging/DeadLetterChannel.html)

@@ -1,19 +1,13 @@
 package br.com.caelum.livraria.modelo;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.*;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 @Entity
 public class Pedido implements Serializable {
 
@@ -24,7 +18,9 @@ public class Pedido implements Serializable {
 	
 	@Temporal(TemporalType.DATE)
 	private Calendar data;
-	
+
+	@XmlElementWrapper(name= "itens")
+	@XmlElement(name = "item")
 	@OneToMany(cascade=CascadeType.PERSIST)
 	private Set<ItemCompra> itens;
 

@@ -32,15 +32,16 @@ public class PagamentoResource {
         return repositorio.get(id);
     }
 
-    @POST
     /*
     Content negotiation: melhor deixar o máximo de representações para abarcar o maior número de clientes.
      */
+    @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response criarPagamento(final Transacao transacao) throws URISyntaxException {
         final Pagamento pagamento = new Pagamento();
         pagamento.setId(idPagamento++);
         pagamento.setValor(transacao.getValor());
+        pagamento.comStatusCriado();
 
         repositorio.put(pagamento.getId(), pagamento);
 
@@ -51,6 +52,16 @@ public class PagamentoResource {
                  * do conteúdo da maneira que ele achar melhor. */
                 .entity(pagamento)
                 .build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Pagamento confirmarPagamento(@PathParam("id") Integer pagamentoId) {
+        final Pagamento pagamento = repositorio.get(pagamentoId);
+        pagamento.comStatusConfirmado();
+        System.out.println("Pagamento confirmado: " + pagamento);
+        return pagamento;
     }
 
     private Map<Integer, Pagamento> repositorio = new HashMap<>();

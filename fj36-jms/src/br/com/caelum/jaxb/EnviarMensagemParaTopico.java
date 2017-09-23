@@ -11,8 +11,10 @@ public class EnviarMensagemParaTopico {
         final ConnectionFactory factory = (ConnectionFactory) ic.lookup("jms/RemoteConnectionFactory");
         final Topic queue = (Topic) ic.lookup("jms/TOPICO.LIVRARIA");
         try (JMSContext context = factory.createContext("jms", "jms2");
-             final Scanner scan = new Scanner(System.in);) {
+             final Scanner scan = new Scanner(System.in)) {
+
             final JMSProducer prod = context.createProducer();
+//            prod.setProperty("formato", "ebook");
             while (scan.hasNextLine()) {
                 final String line = scan.nextLine();
                 prod.send(queue, line);

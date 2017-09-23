@@ -13,7 +13,7 @@ public class RegistrarFinanceiroNoTopico {
         final InitialContext ic = new InitialContext();
         final ConnectionFactory factory = (ConnectionFactory) ic.lookup("jms/RemoteConnectionFactory");
         final Topic topico = (Topic) ic.lookup("jms/TOPICO.LIVRARIA");
-        try (JMSContext context = factory.createContext("jms", "jms2")) {
+        try (JMSContext context = factory.createContext("jms2", "jms2")) {
             context.setClientID("Financeiro");
             final JMSConsumer consumer = context.createDurableConsumer(topico, "AssinaturaNotas");
             consumer.setMessageListener(new TratadorDeMensagem());
